@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# .kamal/hooks/pre-deploy
+# Runs AFTER the image is built and pushed, BEFORE containers are swapped.
+# Use cases: deployment notifications, enable maintenance mode, tag release in monitoring.
+#
+# Available env vars: KAMAL_RECORDED_AT, KAMAL_PERFORMER, KAMAL_SERVICE, KAMAL_VERSION,
+#   KAMAL_SERVICE_VERSION, KAMAL_HOSTS, KAMAL_COMMAND, KAMAL_DESTINATION (optional),
+#   KAMAL_ROLE (optional)
+set -euo pipefail
+
+DESTINATION="${KAMAL_DESTINATION:-production}"
+
+echo "pre-deploy: starting deploy of ${KAMAL_SERVICE} v${KAMAL_VERSION} to ${DESTINATION}"
+echo "  Hosts: ${KAMAL_HOSTS}"
+echo "  Performed by: ${KAMAL_PERFORMER}"
+
+# ---- Slack / webhook notification (optional) --------------------------------
+# Uncomment and set SLACK_DEPLOY_WEBHOOK in .kamal/secrets or your env:
+# WEBHOOK="${SLACK_DEPLOY_WEBHOOK:-}"
+# if [[ -n "$WEBHOOK" ]]; then
+#   curl -s -X POST "$WEBHOOK" \
+#     -H "Content-Type: application/json" \
+#     -d "{
+#       \"text\": \"🚀 Deploying *${KAMAL_SERVICE}* v\`${KAMAL_VERSION}\` to *${DESTINATION}*\",
+#       \"username\": \"Kamal\",
+#       \"icon_emoji\": \":rocket:\"
+#     }" > /dev/null
+#   echo "  Slack notification sent ✓"
+# fi
+
+# ---- Tag release in error monitoring (optional) ----------------------------
+# Example: Sentry release creation
+# if command -v sentry-cli &>/dev/null; then
+#   sentry-cli releases new "${KAMAL_VERSION}"
+#   sentry-cli releases set-commits "${KAMAL_VERSION}" --auto
+#   echo "  Sentry release created ✓"
+# fi
+
+echo "pre-deploy: ready to deploy ✓"

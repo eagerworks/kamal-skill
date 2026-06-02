@@ -1,0 +1,202 @@
+# ============================================================================
+# Kamal 2 — Annotated Starter config/deploy.yml
+# Copy this to your project's config/deploy.yml and customize.
+# Framework-agnostic (works for Node, Go, Python, Ruby, etc.)
+# ============================================================================
+
+# Service name — prefix for container names, volumes, networks.
+# Use lowercase, hyphens OK (e.g. "my-api", "backend", "myapp").
+service: myapp
+
+# Docker image name (NO registry URL, NO tag).
+# The tag is set automatically from the git commit SHA.
+# For GHCR: just the repo name here; put "ghcr.io" in registry.server below.
+image: myuser/myapp
+
+# ============================================================================
+# SERVERS — where to deploy
+# ============================================================================
+servers:
+  # Web/primary role — receives traffic via the proxy
+  web:
+    hosts:
+      - 192.168.0.1    # replace with your server's IP or hostname
+      # - 192.168.0.2  # add more hosts for horizontal scaling
+
+  # Optional: worker role — runs background jobs (no proxy, just containers)
+  # worker:
+  #   hosts:
+  #     - 192.168.0.3
+  #   cmd: node worker.js   # override container CMD for this role
+
+# ============================================================================
+# REGISTRY — Docker image registry
+# ============================================================================
+registry:
+  # Docker Hub: omit 'server' (it's the default)
+  # GHCR: server: ghcr.io
+  # ECR:  server: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+  # server: ghcr.io
+
+  username: myuser    # your registry username
+
+  # IMPORTANT: password is ALWAYS an array of secret variable names.
+  # The values are read from .kamal/secrets (never hardcode here).
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+env:
+  # clear: values are committed to repo (non-sensitive config)
+  clear:
+    NODE_ENV: production
+    PORT: "3000"
+    # DATABASE_URL: postgres://myapp@192.168.0.5:5432/myapp_production
+    # REDIS_URL: redis://127.0.0.1:6379
+
+  # secret: variable NAMES only — values from .kamal/secrets
+  # Never put actual values here.
+  secret:
+    - DATABASE_PASSWORD
+    - SESSION_SECRET
+    # - API_KEY
+    # - S3_SECRET_KEY
+
+# ============================================================================
+# PROXY — kamal-proxy (handles zero-downtime, routing, SSL)
+# ============================================================================
+proxy:
+  # Your app's domain (required for SSL; used for routing when multiple apps share a server)
+  host: app.example.com
+
+  # The port your container listens on (default: 80)
+  # Change this to match your app's actual port (e.g. 3000, 8080)
+  app_port: 3000
+
+  # Automatic Let's Encrypt SSL
+  # Requires: DNS pointing to this server + ports 80 & 443 open
+  ssl: true
+
+  # REQUIRED when ssl: true — forward real client IP and protocol to your app
+  forward_headers: true
+
+  # Healthcheck — your app must respond 200-399 on this path
+  healthcheck:
+    path: /healthz    # change to your app's health endpoint
+    interval: 1       # seconds between polls (default: 1)
+    timeout: 5        # seconds per request (default: 5)
+
+  # Increase for slow-starting apps (default: 30)
+  # response_timeout: 60
+
+  # Disable buffering for SSE / WebSockets / streaming responses:
+  # buffering:
+  #   requests: false
+  #   responses: false
+
+# ============================================================================
+# SSH — connection settings
+# ============================================================================
+ssh:
+  user: deploy    # SSH user on your servers (default: root)
+  # port: 22      # SSH port (default: 22)
+  # proxy: user@bastion.example.com   # jump/bastion host
+
+# ============================================================================
+# BUILDER — how the Docker image is built
+# ============================================================================
+builder:
+  # Build target architectures.
+  # Most cloud servers: amd64. AWS Graviton / ARM: arm64.
+  # Apple Silicon local dev → amd64 servers: use remote builder (see below)
+  arch:
+    - amd64
+
+  # Cache in the registry to speed up builds (optional but recommended):
+  # cache:
+  #   type: registry
+  #   options: mode=max
+
+  # Remote builder — needed when building amd64 from Apple Silicon:
+  # remote: ssh://user@builder.example.com
+
+  # Multi-stage Dockerfile support:
+  # dockerfile: Dockerfile
+  # target: production
+
+# ============================================================================
+# VOLUMES — persistent storage (mounted in app containers)
+# ============================================================================
+# volumes:
+#   - "/data/uploads:/app/uploads"
+#   - "/data/logs:/app/logs"
+
+# ============================================================================
+# ASSET BRIDGING — prevents 404s on old assets during rolling deploys
+# Set to the path inside your container where static assets live.
+# ============================================================================
+# asset_path: /app/public
+
+# ============================================================================
+# ACCESSORIES — side services (database, cache, queue)
+# ============================================================================
+accessories:
+  # PostgreSQL database
+  db:
+    image: postgres:16
+    host: 192.168.0.1    # can be same server as web, or a separate DB server
+    port: "127.0.0.1:5432:5432"    # IMPORTANT: bind to localhost only!
+    env:
+      clear:
+        POSTGRES_DB: myapp_production
+        POSTGRES_USER: myapp
+      secret:
+        - POSTGRES_PASSWORD    # must be in .kamal/secrets
+    directories:
+      - postgres-data:/var/lib/postgresql/data    # named volume for persistence
+    options:
+      restart: unless-stopped
+      memory: 2g
+
+  # Redis cache/queue (optional — uncomment if needed)
+  # cache:
+  #   image: redis:7-alpine
+  #   host: 192.168.0.1
+  #   port: "127.0.0.1:6379:6379"
+  #   cmd: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+  #   directories:
+  #     - redis-data:/data
+  #   options:
+  #     restart: unless-stopped
+
+# ============================================================================
+# BOOT — rolling deploy settings
+# ============================================================================
+# boot:
+#   limit: "25%"    # deploy this many servers at a time (number or percentage)
+#   wait: 10        # seconds between batches
+
+# ============================================================================
+# GLOBAL SETTINGS
+# ============================================================================
+# retain_containers: 5    # keep last N stopped containers for rollback (default: 5)
+# deploy_timeout: 30      # total seconds to wait for healthchecks (default: 30)
+# drain_timeout: 30       # seconds to drain in-flight requests (default: 30)
+# readiness_delay: 0      # extra wait before starting healthchecks (default: 0)
+
+# ============================================================================
+# ALIASES — custom shortcuts (kamal <alias>)
+# ============================================================================
+aliases:
+  shell: app exec --interactive --reuse "sh"
+  logs: app logs --follow
+  migrate: app exec --primary "node migrate.js"    # replace with your migration command
+  # console: app exec --interactive --reuse "node repl.js"
+
+# ============================================================================
+# MULTI-ENVIRONMENT (destinations)
+# See: config/deploy.staging.yml for staging overrides
+# Usage: kamal deploy -d staging
+# ============================================================================

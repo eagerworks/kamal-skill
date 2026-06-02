@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# .kamal/hooks/post-deploy
+# Runs AFTER traffic has switched to the new containers.
+# Use cases: run migrations, send deployment success notification, tag release in APM.
+#
+# Available env vars: KAMAL_RECORDED_AT, KAMAL_PERFORMER, KAMAL_SERVICE, KAMAL_VERSION,
+#   KAMAL_SERVICE_VERSION, KAMAL_HOSTS, KAMAL_COMMAND, KAMAL_DESTINATION (optional),
+#   KAMAL_ROLE (optional)
+set -euo pipefail
+
+DESTINATION="${KAMAL_DESTINATION:-production}"
+
+echo "post-deploy: ${KAMAL_SERVICE} v${KAMAL_VERSION} deployed to ${DESTINATION} ✓"
+
+# ---- Run database migrations (optional) ------------------------------------
+# Uncomment and replace with your migration command:
+# echo "post-deploy: running database migrations..."
+# kamal app exec --primary "node migrate.js"
+# echo "post-deploy: migrations complete ✓"
+
+# ---- Success notification (optional) ----------------------------------------
+# WEBHOOK="${SLACK_DEPLOY_WEBHOOK:-}"
+# if [[ -n "$WEBHOOK" ]]; then
+#   # Calculate deploy duration
+#   DEPLOY_TIME="${KAMAL_RECORDED_AT}"
+#   curl -s -X POST "$WEBHOOK" \
+#     -H "Content-Type: application/json" \
+#     -d "{
+#       \"text\": \"✅ *${KAMAL_SERVICE}* v\`${KAMAL_VERSION}\` deployed to *${DESTINATION}* by ${KAMAL_PERFORMER}\",
+#       \"username\": \"Kamal\",
+#       \"icon_emoji\": \":white_check_mark:\"
+#     }" > /dev/null
+#   echo "  Slack success notification sent ✓"
+# fi
+
+# ---- Finalize release in error monitoring (optional) -----------------------
+# if command -v sentry-cli &>/dev/null; then
+#   sentry-cli releases finalize "${KAMAL_VERSION}"
+#   sentry-cli releases deploys "${KAMAL_VERSION}" new -e "${DESTINATION}"
+#   echo "  Sentry release finalized ✓"
+# fi
+
+echo "post-deploy: done"

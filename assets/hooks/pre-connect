@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# .kamal/hooks/pre-connect
+# Runs BEFORE Kamal opens SSH connections to your servers.
+# This is the only hook that auto-loads .kamal/secrets — so secrets are available here.
+# Non-zero exit aborts the deploy.
+#
+# Use cases: validate required secrets exist, check prerequisites, notify monitoring.
+set -euo pipefail
+
+# ---- Validate required secrets are set -------------------------------------
+required_vars=(
+  "KAMAL_REGISTRY_PASSWORD"
+  "DATABASE_PASSWORD"
+  # "SESSION_SECRET"    # add your app's required secrets here
+)
+
+missing=0
+for var in "${required_vars[@]}"; do
+  if [[ -z "${!var:-}" ]]; then
+    echo "ERROR: Required secret '${var}' is not set in .kamal/secrets" >&2
+    missing=1
+  fi
+done
+
+if [[ $missing -eq 1 ]]; then
+  echo "Set missing secrets in .kamal/secrets and retry." >&2
+  exit 1
+fi
+
+echo "pre-connect: all required secrets present ✓"
+
+# ---- Notify (optional) -----------------------------------------------------
+# Uncomment to post a Slack/webhook notification before connecting:
+# WEBHOOK="${SLACK_DEPLOY_WEBHOOK:-}"
+# if [[ -n "$WEBHOOK" ]]; then
+#   curl -s -X POST "$WEBHOOK" \
+#     -H "Content-Type: application/json" \
+#     -d "{\"text\": \"🔌 Connecting to servers for ${KAMAL_SERVICE} deploy v${KAMAL_VERSION}\"}" \
+#     > /dev/null
+# fi

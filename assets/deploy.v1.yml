@@ -1,0 +1,170 @@
+# ============================================================================
+# Kamal 1.9.x — Annotated Starter config/deploy.yml
+# Use this template if you're on Kamal 1.x (with Traefik).
+# For Kamal 2.x, use assets/deploy.yml instead.
+# ============================================================================
+
+# Service name — prefix for container names.
+service: myapp
+
+# Docker image name (no registry URL, no tag)
+image: myuser/myapp
+
+# ============================================================================
+# SERVERS
+# ============================================================================
+servers:
+  web:
+    hosts:
+      - 192.168.0.1
+
+  # Optional: worker role (no proxy, runs background jobs)
+  # worker:
+  #   hosts:
+  #     - 192.168.0.2
+  #   cmd: node worker.js
+
+# ============================================================================
+# REGISTRY
+# ============================================================================
+registry:
+  # server: ghcr.io    # or your registry host; omit for Docker Hub
+  username: myuser
+  password:
+    - KAMAL_REGISTRY_PASSWORD    # read from .env or shell ENV
+
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "3000"
+  secret:
+    - DATABASE_PASSWORD
+    - SESSION_SECRET
+    # Secrets are read from .env (NOT .kamal/secrets — that's Kamal 2)
+
+# ============================================================================
+# TRAEFIK — reverse proxy (Kamal 1.x only)
+# In Kamal 2, this block is replaced by 'proxy:'
+# ============================================================================
+traefik:
+  image: traefik:v2.10         # default: traefik:v2.10
+  host_port: "80"              # port on the host (default: 80)
+
+  # Traefik CLI args — configure entrypoints, logging, etc.
+  args:
+    entryPoints.http.address: ":80"
+    entryPoints.http.forwardedHeaders.insecure: true    # forward X-Forwarded-* headers
+    accesslog: true
+    accesslog.format: json
+
+  # Optional: Docker labels for routing rules, etc.
+  # labels:
+  #   traefik.http.routers.myapp.rule: Host(`app.example.com`)
+
+  # Optional: Traefik container resource limits
+  # options:
+  #   memory: 256m
+  #   cpus: "0.5"
+
+# ---- SSL via Traefik Let's Encrypt (Kamal 1 only) --------------------------
+# Uncomment and fill in to enable HTTPS via Traefik ACME:
+# traefik:
+#   args:
+#     entryPoints.web.address: ":80"
+#     entryPoints.websecure.address: ":443"
+#     certificatesResolvers.letsencrypt.acme.email: "you@example.com"
+#     certificatesResolvers.letsencrypt.acme.storage: "/letsencrypt/acme.json"
+#     certificatesResolvers.letsencrypt.acme.httpChallenge: true
+#     certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint: web
+#   labels:
+#     traefik.http.routers.myapp.entrypoints: websecure
+#     traefik.http.routers.myapp.rule: Host(`app.example.com`)
+#     traefik.http.routers.myapp.tls: "true"
+#     traefik.http.routers.myapp.tls.certresolver: letsencrypt
+#   options:
+#     volumes:
+#       - "/letsencrypt:/letsencrypt"    # IMPORTANT: persist cert storage
+
+# ============================================================================
+# HEALTHCHECK — Kamal 1 specific (in Kamal 2 this moves under proxy:)
+# ============================================================================
+healthcheck:
+  path: /healthz         # your health endpoint
+  port: "3000"           # your app's port (default: 3000 in v1, 80 in v2)
+  interval: 10s          # polling interval (default: 10s; v2 default is 1s)
+  max_attempts: 7        # retries before failure (default: 7)
+  # cord: /tmp/kamal-cord   # zero-downtime cord file (default: /tmp/kamal-cord)
+
+# ============================================================================
+# SSH
+# ============================================================================
+ssh:
+  user: deploy
+
+# ============================================================================
+# BUILDER — Kamal 1.x structure
+# (Note: different key structure from Kamal 2's builder block)
+# ============================================================================
+builder:
+  multiarch: true           # enable building for multiple architectures (default: true)
+  local:
+    arch: arm64             # architecture of your local build machine (e.g. arm64 for Apple Silicon)
+    host: /var/run/docker.sock
+  remote:
+    arch: amd64             # architecture to build remotely
+    host: ssh://docker@builder.example.com
+  cache:
+    type: registry
+    options: mode=max
+
+  # context: .
+  # dockerfile: Dockerfile
+  # target: production
+  # args:
+  #   NODE_VERSION: "20"
+  # secrets:
+  #   - GITHUB_TOKEN
+
+# ============================================================================
+# ACCESSORIES
+# ============================================================================
+accessories:
+  db:
+    image: postgres:16
+    host: 192.168.0.1
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_DB: myapp_production
+        POSTGRES_USER: myapp
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - postgres-data:/var/lib/postgresql/data
+    options:
+      restart: unless-stopped
+
+# ============================================================================
+# SECRETS — Kamal 1.x approach
+#
+# Values are read from .env (project root) or the local shell environment.
+# Push secrets to servers manually:
+#   kamal env push
+#
+# .env example:
+#   KAMAL_REGISTRY_PASSWORD=your-token
+#   DATABASE_PASSWORD=your-db-password
+#   SESSION_SECRET=your-session-secret
+#
+# To migrate to Kamal 2, move values to .kamal/secrets (same format).
+# ============================================================================
+
+# ============================================================================
+# ALIASES
+# ============================================================================
+aliases:
+  shell: app exec --interactive --reuse "sh"
+  logs: app logs --follow

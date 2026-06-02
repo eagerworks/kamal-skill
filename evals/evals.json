@@ -1,0 +1,57 @@
+{
+  "skill_name": "kamal",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a Dockerized Go API (listens on port 8080) and a fresh Ubuntu 22.04 VPS at 45.33.32.156. My Docker Hub username is acmecorp, registry token is in my env as DOCKER_HUB_TOKEN. I need to deploy it with Postgres 15 (same server is fine). Walk me through setting up Kamal from scratch — the config/deploy.yml, .kamal/secrets, running the first deploy.",
+      "expected_output": "Kamal 2 setup: install kamal gem, kamal init, a complete config/deploy.yml with service/image/servers/registry/proxy/ssh/accessories (Postgres with 127.0.0.1 port binding), .kamal/secrets template with KAMAL_REGISTRY_PASSWORD and POSTGRES_PASSWORD, gitignore instruction for .kamal/secrets*, kamal config to validate, kamal setup to first deploy. proxy.app_port: 8080 since app listens on 8080.",
+      "files": [],
+      "expectations": [
+        "Response includes a complete config/deploy.yml with proxy.app_port: 8080 (matching the Go API's listening port)",
+        "Response shows registry.password as an array with a secret name (e.g. - KAMAL_REGISTRY_PASSWORD), not as a plain string value",
+        "The Postgres accessory port binding uses '127.0.0.1:5432:5432' (localhost-only, not '5432:5432' which would expose publicly)",
+        "Response includes .kamal/secrets content that maps KAMAL_REGISTRY_PASSWORD to $DOCKER_HUB_TOKEN (referencing the env var the user already has)",
+        "Response instructs adding .kamal/secrets* to .gitignore",
+        "Response tells the user to run 'kamal setup' (not 'kamal deploy') for the very first deployment"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "kamal deploy is stuck and showing 'Container failed to become healthy (attempt 30/30)'. My app is a Node.js server, I can see it starts fine with docker run locally. The deploy.yml has proxy.healthcheck.path set to /health. What should I investigate and how do I fix it?",
+      "expected_output": "Systematic troubleshooting: check kamal app logs --since 5m, check proxy.app_port matches container listening port, try kamal app exec --reuse 'curl -f http://localhost:<port>/health', check for missing env vars via kamal config, suggest increasing deploy_timeout, check readiness_delay if app is slow to start. Mention common root causes: wrong port, wrong health path, missing env var causing crash, app not yet listening.",
+      "files": [],
+      "expectations": [
+        "Response identifies wrong proxy.app_port as a likely root cause (Kamal 2 defaults to 80, Node apps commonly listen on 3000+)",
+        "Response includes a command to test the healthcheck from inside the container (kamal app exec --reuse with curl against localhost:<port>/health)",
+        "Response mentions deploy_timeout as a config key to increase for slow-starting apps",
+        "Response covers at least 3 distinct root causes for healthcheck failure (e.g. wrong port, wrong path, missing env var, app crash, binding to 127.0.0.1)",
+        "Response includes 'kamal app logs' with a time-limiting flag (--since) to read recent startup logs"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I accidentally deployed a broken build. I need to roll back to the previous version ASAP. What are the exact commands? And how do I make sure future rollbacks are possible?",
+      "expected_output": "Exact sequence: kamal app containers to find previous version tag, kamal rollback <VERSION>. Mention retain_containers default (5) and how to increase it. Explain that rollback only works if the old container hasn't been pruned. Mention kamal audit for deployment history.",
+      "files": [],
+      "expectations": [
+        "Response includes 'kamal app containers' as the command to find the previous version hash/tag",
+        "Response shows the exact rollback command: 'kamal rollback <VERSION>' with a concrete example of a version identifier",
+        "Response explains the retain_containers config setting and how it controls how many old versions are kept available for rollback",
+        "Response explicitly warns that rollback only works if the old container/image has not been pruned"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We're running Kamal 1.9.2 with Traefik for our Python/Flask app. We want to add HTTPS with Let's Encrypt. Can you show me how to configure that in our current Traefik setup? And then also explain what the migration path to Kamal 2 looks like for SSL.",
+      "expected_output": "v1 SSL: Traefik ACME config in traefik: block with args (certificatesResolvers.letsencrypt.*) and per-router labels (tls, certresolver), plus a volume for /letsencrypt/acme.json persistence. v2 migration: proxy: block with ssl: true, forward_headers: true, kamal upgrade command, .env → .kamal/secrets migration, port 3000→80 change.",
+      "files": [],
+      "expectations": [
+        "Response includes the Traefik ACME certresolver args in the traefik: block (certificatesResolvers.letsencrypt.acme.* keys including email, storage, httpChallenge)",
+        "Response includes Traefik labels for TLS routing on the app's router (tls: true and tls.certresolver: letsencrypt)",
+        "Response mentions or shows the /letsencrypt volume mount in traefik options to persist certificates across restarts (without which certs are lost on every Traefik reboot)",
+        "Response shows the Kamal 2 proxy block with ssl: true and forward_headers: true for the migration path",
+        "Response includes the 'kamal upgrade' command for executing the v1-to-v2 migration on the server"
+      ]
+    }
+  ]
+}
