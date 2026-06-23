@@ -73,7 +73,7 @@ Claude Code reads the `name` and `description` frontmatter in `SKILL.md` and loa
 First, vendor the skill into your project:
 
 ```bash
-git submodule add https://github.com/your-org/kamal-skill tools/kamal-skill
+git submodule add https://github.com/eagerworks/kamal-skill tools/kamal-skill
 # or: cp -r /path/to/kamal-skill tools/kamal-skill
 ```
 
@@ -106,7 +106,7 @@ Cursor matches the `description` to incoming requests and loads the rule automat
 Vendor the skill first (same as above):
 
 ```bash
-git submodule add https://github.com/your-org/kamal-skill tools/kamal-skill
+git submodule add https://github.com/eagerworks/kamal-skill tools/kamal-skill
 # or: cp -r /path/to/kamal-skill tools/kamal-skill
 ```
 
