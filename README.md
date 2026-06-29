@@ -48,6 +48,14 @@ The agent opens `references/*.md` files on demand, so the pointer stays tiny whi
 
 ### Claude Code
 
+**Quickest — via the [skills CLI](https://www.skills.sh):** run this from your project root and start a new session:
+
+```bash
+npx skills add eagerworks/kamal-skill
+```
+
+It vendors the skill into `.claude/skills/` and Claude Code picks up `SKILL.md` automatically.
+
 **Global install** (available in every project):
 
 ```bash
