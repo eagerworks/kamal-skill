@@ -1,23 +1,33 @@
-# Contributing to kamal-skill
+# Contributing to eagerworks/skills
 
-`kamal-skill` is a portable markdown knowledge base — not a runnable library. Contributions improve the quality and accuracy of the deployment guidance agents receive when working with Kamal. Every improvement, no matter how small, benefits anyone who uses the skill.
+`eagerworks/skills` is a collection of portable markdown agent skills — not a runnable library. Contributions improve the quality and accuracy of the guidance agents receive. Every improvement, no matter how small, benefits anyone who uses these skills.
 
 ## What you can contribute
 
-- **Content fixes** — corrections to `skills/kamal/SKILL.md` or any `skills/kamal/references/*.md` file (outdated commands, wrong flags, missing gotchas)
-- **New reference content** — coverage gaps in configuration options, commands, or workflows
-- **Annotated assets** — additions or updates to `skills/kamal/assets/deploy.yml`, `skills/kamal/assets/deploy.v1.yml`, `skills/kamal/assets/secrets.example`, or the hook samples in `skills/kamal/assets/hooks/`
-- **Eval cases** — new test cases in `evals/evals.json` that verify the skill answers questions correctly
+- **Content fixes** — corrections to any skill's `SKILL.md` or `references/*.md` file (outdated commands, wrong flags, missing gotchas)
+- **New reference content** — coverage gaps in an existing skill
+- **Annotated assets** — additions or updates to a skill's `assets/` (config templates, executable samples)
+- **Eval cases** — new test cases under `evals/<skill>/evals.json` that verify a skill answers questions correctly
+- **A new skill** — see [Adding a new skill](#adding-a-new-skill) below
 - **Clarity** — rewriting confusing sections, fixing typos, improving code comments
 
 ## Project structure
 
-See [`README.md`](README.md) for the full layout. The key design principle:
+See [`README.md`](README.md) for the full layout. Each skill is a self-contained directory under `skills/<name>/`, and the key design principle (illustrated here with `kamal`) is the same for every skill:
 
-- **`skills/kamal/SKILL.md`** is the hub — version detection, setup workflow, command cheatsheet, and critical gotchas. Keep it lean. If something is detailed or niche, it belongs in `references/`.
-- **`skills/kamal/references/*.md`** files are loaded on demand — each covers a single domain in depth. Add detail here rather than expanding `SKILL.md`.
-- **`skills/kamal/assets/`** holds copyable starter files — annotated config templates and executable hook samples.
-- **`evals/evals.json`** is the repo-level test harness — a list of question/answer pairs used to verify skill quality (not shipped with the skill).
+- **`skills/<name>/SKILL.md`** is the hub and agent entrypoint — keep it lean. If something is detailed or niche, it belongs in `references/`.
+- **`skills/<name>/references/*.md`** files are loaded on demand — each covers a single domain in depth. Add detail here rather than expanding `SKILL.md`.
+- **`skills/<name>/assets/`** holds copyable starter files — templates and executable samples.
+- **`skills/<name>/README.md`** is the human-facing overview of the skill.
+- **`evals/<name>/evals.json`** is the repo-level test harness — question/answer pairs used to verify quality (kept outside `skills/<name>/` so it isn't shipped to users).
+
+## Adding a new skill
+
+1. Create `skills/<name>/SKILL.md` with `name` and `description` frontmatter. The `description` is what agents match against — be specific about *when* to use the skill.
+2. Add `references/` and `assets/` inside `skills/<name>/` as needed; keep `SKILL.md` lean and push depth into `references/`.
+3. Add a `skills/<name>/README.md` human overview.
+4. Add eval cases at `evals/<name>/evals.json`.
+5. Add a row to the **Available skills** table in [`README.md`](README.md).
 
 ## Content guidelines
 
@@ -44,7 +54,7 @@ traefik:
 
 ### Eval cases
 
-`evals/evals.json` contains question/answer pairs for automated evaluation. When your change alters skill behavior or adds new coverage, add a corresponding eval case:
+Each skill's `evals/<name>/evals.json` (e.g. `evals/kamal/evals.json`) contains question/answer pairs for automated evaluation. When your change alters skill behavior or adds new coverage, add a corresponding eval case:
 
 ```json
 {
@@ -74,13 +84,13 @@ Load the updated skill in an agent (Claude Code, Cursor, etc.) and ask questions
    git commit -m "docs: add missing --skip-push flag to cheatsheet"
    ```
 
-3. **Open a PR against `main`** on [`eagerworks/kamal-skill`](https://github.com/eagerworks/kamal-skill). In the PR description, briefly explain what changed and why — a sentence or two is fine.
+3. **Open a PR against `main`** on [`eagerworks/skills`](https://github.com/eagerworks/skills). In the PR description, briefly explain what changed and why — a sentence or two is fine.
 
 4. **Reference issues** when applicable: `Closes #12` or `See #8`.
 
 ## Reporting bugs or requesting content
 
-Open a [GitHub issue](https://github.com/eagerworks/kamal-skill/issues) — whether it's a factual error, missing coverage, an outdated command, or a feature request.
+Open a [GitHub issue](https://github.com/eagerworks/skills/issues) — whether it's a factual error, missing coverage, an outdated command, or a feature request.
 
 ## License
 
