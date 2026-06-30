@@ -18,23 +18,24 @@ A portable agent skill for setting up and managing [Kamal](https://kamal-deploy.
 ## Repo structure
 
 ```
-SKILL.md                        # hub: version detection, setup workflow, cheatsheet, gotchas
-references/
-  configuration.md              # complete deploy.yml key reference with full example
-  commands.md                   # every CLI command, subcommand, and flag
-  workflows.md                  # setup / deploy / rollback / rolling / multi-server
-  secrets-and-hooks.md          # .kamal/secrets, vault adapters, hooks + sample scripts
-  proxy-and-ssl.md              # kamal-proxy, Let's Encrypt, streaming, per-role proxy
-  builders.md                   # build strategies, remote builder, multiarch, asset bridging
-  troubleshooting.md            # 10 common issues, debugging techniques, log commands
-  kamal-v1.md                   # Kamal 1.9.x syntax + v1→v2 upgrade procedure
-assets/
-  deploy.yml                    # annotated v2 starter config (framework-agnostic)
-  deploy.v1.yml                 # annotated v1 starter config (Traefik block)
-  secrets.example               # .kamal/secrets template with vault adapter patterns
-  hooks/                        # executable pre-connect, pre-deploy, post-deploy samples
+skills/kamal/                   # the installable skill (what skills.sh ships)
+  SKILL.md                      # hub: version detection, setup workflow, cheatsheet, gotchas
+  references/
+    configuration.md            # complete deploy.yml key reference with full example
+    commands.md                 # every CLI command, subcommand, and flag
+    workflows.md                # setup / deploy / rollback / rolling / multi-server
+    secrets-and-hooks.md        # .kamal/secrets, vault adapters, hooks + sample scripts
+    proxy-and-ssl.md            # kamal-proxy, Let's Encrypt, streaming, per-role proxy
+    builders.md                 # build strategies, remote builder, multiarch, asset bridging
+    troubleshooting.md          # 10 common issues, debugging techniques, log commands
+    kamal-v1.md                 # Kamal 1.9.x syntax + v1→v2 upgrade procedure
+  assets/
+    deploy.yml                  # annotated v2 starter config (framework-agnostic)
+    deploy.v1.yml               # annotated v1 starter config (Traefik block)
+    secrets.example             # .kamal/secrets template with vault adapter patterns
+    hooks/                      # executable pre-connect, pre-deploy, post-deploy samples
 evals/
-  evals.json                    # eval test cases
+  evals.json                    # eval test cases (repo-level harness, not shipped)
 ```
 
 ## Install
@@ -74,18 +75,18 @@ The agent opens `references/*.md` files on demand, so the pointer stays tiny whi
 
 ```bash
 # copy:
-cp -r /path/to/kamal-skill ~/.claude/skills/kamal
+cp -r /path/to/kamal-skill/skills/kamal ~/.claude/skills/kamal
 
 # or symlink (changes in the repo reflect immediately):
-ln -s /path/to/kamal-skill ~/.claude/skills/kamal
+ln -s /path/to/kamal-skill/skills/kamal ~/.claude/skills/kamal
 ```
 
 **Project-level install** (committed to the repo, shared with your team):
 
 ```bash
 mkdir -p .claude/skills
-cp -r /path/to/kamal-skill .claude/skills/kamal
-# or: ln -s /path/to/kamal-skill .claude/skills/kamal
+cp -r /path/to/kamal-skill/skills/kamal .claude/skills/kamal
+# or: ln -s /path/to/kamal-skill/skills/kamal .claude/skills/kamal
 ```
 
 Claude Code reads the `name` and `description` frontmatter in `SKILL.md` and loads the skill automatically — no extra pointer file needed.
@@ -117,8 +118,8 @@ description: >
 alwaysApply: false
 ---
 
-Read @tools/kamal-skill/SKILL.md for Kamal deployment guidance.
-Load the matching file from @tools/kamal-skill/references/ on demand as needed.
+Read @tools/kamal-skill/skills/kamal/SKILL.md for Kamal deployment guidance.
+Load the matching file from @tools/kamal-skill/skills/kamal/references/ on demand as needed.
 ```
 
 Cursor matches the `description` to incoming requests and loads the rule automatically — no need to mention Kamal explicitly.
@@ -137,9 +138,9 @@ git submodule add https://github.com/eagerworks/kamal-skill tools/kamal-skill
 ```markdown
 ## Kamal deployments
 
-When helping with Kamal deployments, read `tools/kamal-skill/SKILL.md` for version detection,
+When helping with Kamal deployments, read `tools/kamal-skill/skills/kamal/SKILL.md` for version detection,
 setup workflow, a command cheatsheet, and critical gotchas. Load the relevant file from
-`tools/kamal-skill/references/` on demand (configuration, commands, workflows, secrets-and-hooks,
+`tools/kamal-skill/skills/kamal/references/` on demand (configuration, commands, workflows, secrets-and-hooks,
 proxy-and-ssl, builders, troubleshooting, kamal-v1).
 ```
 
@@ -150,9 +151,9 @@ proxy-and-ssl, builders, troubleshooting, kamal-v1).
 applyTo: "**/deploy.yml,**/.kamal/**,**/kamal/**"
 ---
 
-When helping with Kamal deployments, read `tools/kamal-skill/SKILL.md` for version detection,
+When helping with Kamal deployments, read `tools/kamal-skill/skills/kamal/SKILL.md` for version detection,
 setup workflow, a command cheatsheet, and critical gotchas. Load the relevant file from
-`tools/kamal-skill/references/` on demand (configuration, commands, workflows, secrets-and-hooks,
+`tools/kamal-skill/skills/kamal/references/` on demand (configuration, commands, workflows, secrets-and-hooks,
 proxy-and-ssl, builders, troubleshooting, kamal-v1).
 ```
 
@@ -163,9 +164,9 @@ Vendor the skill (same as above), then add a section to your project's `AGENTS.m
 ```markdown
 ## Kamal deployments
 
-When helping with Kamal deployments, read `tools/kamal-skill/SKILL.md` for version detection,
+When helping with Kamal deployments, read `tools/kamal-skill/skills/kamal/SKILL.md` for version detection,
 setup workflow, a command cheatsheet, and critical gotchas. Load the relevant file from
-`tools/kamal-skill/references/` on demand (configuration, commands, workflows, secrets-and-hooks,
+`tools/kamal-skill/skills/kamal/references/` on demand (configuration, commands, workflows, secrets-and-hooks,
 proxy-and-ssl, builders, troubleshooting, kamal-v1).
 ```
 
@@ -189,7 +190,7 @@ The progressive-disclosure design means the agent loads only `SKILL.md` up front
 
 ## Kamal version support
 
-The skill defaults to **Kamal 2.x** (current). Full Kamal 1.9.x syntax — including the `traefik:` block, `.env`-based secrets, `kamal env push`, and the complete v1→v2 upgrade procedure — is in [`references/kamal-v1.md`](references/kamal-v1.md).
+The skill defaults to **Kamal 2.x** (current). Full Kamal 1.9.x syntax — including the `traefik:` block, `.env`-based secrets, `kamal env push`, and the complete v1→v2 upgrade procedure — is in [`skills/kamal/references/kamal-v1.md`](skills/kamal/references/kamal-v1.md).
 
 ## License
 

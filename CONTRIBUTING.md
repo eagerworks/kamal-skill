@@ -4,9 +4,9 @@
 
 ## What you can contribute
 
-- **Content fixes** — corrections to `SKILL.md` or any `references/*.md` file (outdated commands, wrong flags, missing gotchas)
+- **Content fixes** — corrections to `skills/kamal/SKILL.md` or any `skills/kamal/references/*.md` file (outdated commands, wrong flags, missing gotchas)
 - **New reference content** — coverage gaps in configuration options, commands, or workflows
-- **Annotated assets** — additions or updates to `assets/deploy.yml`, `assets/deploy.v1.yml`, `assets/secrets.example`, or the hook samples in `assets/hooks/`
+- **Annotated assets** — additions or updates to `skills/kamal/assets/deploy.yml`, `skills/kamal/assets/deploy.v1.yml`, `skills/kamal/assets/secrets.example`, or the hook samples in `skills/kamal/assets/hooks/`
 - **Eval cases** — new test cases in `evals/evals.json` that verify the skill answers questions correctly
 - **Clarity** — rewriting confusing sections, fixing typos, improving code comments
 
@@ -14,14 +14,14 @@
 
 See [`README.md`](README.md) for the full layout. The key design principle:
 
-- **`SKILL.md`** is the hub — version detection, setup workflow, command cheatsheet, and critical gotchas. Keep it lean. If something is detailed or niche, it belongs in `references/`.
-- **`references/*.md`** files are loaded on demand — each covers a single domain in depth. Add detail here rather than expanding `SKILL.md`.
-- **`assets/`** holds copyable starter files — annotated config templates and executable hook samples.
-- **`evals/evals.json`** is the test harness — a list of question/answer pairs used to verify skill quality.
+- **`skills/kamal/SKILL.md`** is the hub — version detection, setup workflow, command cheatsheet, and critical gotchas. Keep it lean. If something is detailed or niche, it belongs in `references/`.
+- **`skills/kamal/references/*.md`** files are loaded on demand — each covers a single domain in depth. Add detail here rather than expanding `SKILL.md`.
+- **`skills/kamal/assets/`** holds copyable starter files — annotated config templates and executable hook samples.
+- **`evals/evals.json`** is the repo-level test harness — a list of question/answer pairs used to verify skill quality (not shipped with the skill).
 
 ## Content guidelines
 
-**Version accuracy.** The skill defaults to Kamal 2.x. Kamal 1.9.x content belongs exclusively in `references/kamal-v1.md`. When adding examples that only apply to one version, mark them clearly:
+**Version accuracy.** The skill defaults to Kamal 2.x. Kamal 1.9.x content belongs exclusively in `skills/kamal/references/kamal-v1.md`. When adding examples that only apply to one version, mark them clearly:
 
 ```yaml
 # Kamal 2.x only
