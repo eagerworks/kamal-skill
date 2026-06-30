@@ -39,22 +39,36 @@ evals/
 
 ## Install
 
-The universal pattern is the same for every tool:
-
-1. **Vendor the skill** into your project (or a global location).
-2. **Add a small pointer** in your tool's rules/instructions file so the agent knows to load `SKILL.md` when Kamal is relevant.
-
-The agent opens `references/*.md` files on demand, so the pointer stays tiny while the full knowledge base is always available.
-
-### Claude Code
-
-**Quickest — via the [skills CLI](https://www.skills.sh):** run this from your project root and start a new session:
+Install with the [skills.sh CLI](https://www.skills.sh) — one command, no manual file copying or pointer files to write. It works with Claude Code and 70+ other agents (Cursor, GitHub Copilot, Codex, Amp, and more).
 
 ```bash
 npx skills add eagerworks/kamal-skill
 ```
 
-It vendors the skill into `.claude/skills/` and Claude Code picks up `SKILL.md` automatically.
+That's it. A few notes:
+
+- **Agent detection** — the CLI auto-detects the coding agents you have installed. If none are detected, it prompts you to pick which ones to install to.
+- **Target specific tools** with `-a` / `--agent` (repeatable):
+
+  ```bash
+  npx skills add eagerworks/kamal-skill -a claude-code -a cursor
+  ```
+
+  Supported slugs include `claude-code`, `cursor`, `github-copilot`, `codex`, and `amp` (plus dozens more).
+- **Global vs project** — installs into your project by default. Add `-g` / `--global` to make it available in every project.
+- **No pointer files** — agents with native Agent Skills support load `SKILL.md` automatically from its frontmatter `description`, and open `references/*.md` on demand. Nothing else to wire up.
+
+<details>
+<summary><strong>Manual install (advanced)</strong> — for tools without skills.sh support, or if you prefer to vendor the files yourself</summary>
+
+The universal pattern is the same for every tool:
+
+1. **Vendor the skill** into your project (or a global location).
+2. **Add a small pointer** in your tool's rules/instructions file so the agent knows to load `SKILL.md` when Kamal is relevant.
+
+The agent opens `references/*.md` files on demand, so the pointer stays tiny while the full knowledge base is always available. All integrations point at the same `SKILL.md` and `references/` files, so updating the vendored copy updates every integration at once.
+
+### Claude Code
 
 **Global install** (available in every project):
 
@@ -155,6 +169,8 @@ setup workflow, a command cheatsheet, and critical gotchas. Load the relevant fi
 proxy-and-ssl, builders, troubleshooting, kamal-v1).
 ```
 
+</details>
+
 ### Any LLM — Claude.ai, API, or standalone
 
 The content is plain markdown and works in any interface:
@@ -167,9 +183,9 @@ The content is plain markdown and works in any interface:
 
 ## How it stays in sync
 
-All tool integrations point at the same `SKILL.md` and `references/` files. Update the skill once (pull the submodule, copy the new version, etc.) and every tool integration picks up the changes automatically — there is no per-tool content to keep in sync.
+Every tool reads the same `SKILL.md` and `references/` files. Re-run `npx skills add eagerworks/kamal-skill` to pull the latest version (or, on a manual install, update your vendored copy) and every agent picks up the changes — there is no per-tool content to keep in sync.
 
-The progressive-disclosure design means each pointer is small (a few lines), while the full knowledge base — eight reference files and annotated config assets — is always available for the agent to open on demand.
+The progressive-disclosure design means the agent loads only `SKILL.md` up front, while the full knowledge base — eight reference files and annotated config assets — is always available to open on demand.
 
 ## Kamal version support
 
